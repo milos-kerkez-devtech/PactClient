@@ -23,8 +23,8 @@ namespace PactClientTest
         {
             //Arrange
             _mockProviderService
-                .Given("There is a something with id 'tester'")
-                .UponReceiving("A GET request to retrieve the something")
+                .Given("There is a user with id 'tester'")
+                .UponReceiving("A GET request to retrieve user with id 'tester'")
                 .With(new ProviderServiceRequest
                 {
                     Method = HttpVerb.Get,
