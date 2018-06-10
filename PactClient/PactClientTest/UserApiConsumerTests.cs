@@ -1,20 +1,21 @@
-using System.Collections.Generic;
 using PactClient.Pact;
 using PactNet.Mocks.MockHttpService;
 using PactNet.Mocks.MockHttpService.Models;
+using System.Collections.Generic;
+using System.Net;
 using Xunit;
 
 namespace PactClientTest
 {
-    public class UserApiConsumerTests: IClassFixture<ConsumerMyApiPact>
+    public class UserApiConsumerTests : IClassFixture<ConsumerMyApiPact>
     {
-        private IMockProviderService _mockProviderService;
-        private string _mockProviderServiceBaseUri;
+        private readonly IMockProviderService _mockProviderService;
+        private readonly string _mockProviderServiceBaseUri;
 
         public UserApiConsumerTests(ConsumerMyApiPact data)
         {
             _mockProviderService = data.MockProviderService;
-            _mockProviderService.ClearInteractions(); //NOTE: Clears any previously registered interactions before the test is run
+            _mockProviderService.ClearInteractions();
             _mockProviderServiceBaseUri = data.MockProviderServiceBaseUri;
         }
 
@@ -23,8 +24,8 @@ namespace PactClientTest
         {
             //Arrange
             _mockProviderService
-                .Given("There is a user with id 'tester'")
-                .UponReceiving("A GET request to retrieve user with id 'tester'")
+                .Given("There is a user with id 'test'")
+                .UponReceiving("A GET request to retrieve user with id 'test'")
                 .With(new ProviderServiceRequest
                 {
                     Method = HttpVerb.Get,
@@ -41,13 +42,13 @@ namespace PactClientTest
                     {
                         { "Content-Type", "application/json; charset=utf-8" }
                     },
-                    Body = new //NOTE: Note the case sensitivity here, the body will be serialised as per the casing defined
+                    Body = new
                     {
                         Id = "test",
                         FirstName = "Milos",
                         LastName = "Kerkez"
                     }
-                }); //NOTE: WillRespondWith call must come last as it will register the interaction
+                });
 
             var consumer = new UserApiClient(_mockProviderServiceBaseUri);
 
@@ -57,7 +58,51 @@ namespace PactClientTest
             //Assert
             Assert.Equal("test", result.Id);
 
-            _mockProviderService.VerifyInteractions(); //NOTE: Verifies that interactions registered on the mock provider are called once and only once
+            _mockProviderService.VerifyInteractions();
+        }
+
+        [Fact]
+        public void AddUser_WhenUserDataAreProvided_ReturnsStatusCreated()
+        {
+            //Arrange
+            _mockProviderService
+                .Given("Create a user with id 'test'")
+                .UponReceiving("A POST request to create user with id 'test'")
+                .With(new ProviderServiceRequest
+                {
+                    Method = HttpVerb.Post,
+                    Path = "/user",
+                    Headers = new Dictionary<string, object>
+                    {
+                        { "Content-Type", "application/json; charset=utf-8"}
+                    },
+                    Body = new
+                    {
+                        id = "test",
+                        firstName = "Milos",
+                        lastName = "Kerkez"
+                    }
+                })
+                .WillRespondWith(new ProviderServiceResponse
+                {
+                    Status = 201
+                });
+
+            var consumer = new UserApiClient(_mockProviderServiceBaseUri);
+
+            //Act
+            var userToAdd = new User
+            {
+                Id = "test",
+                FirstName = "Milos",
+                LastName = "Kerkez"
+            };
+            var result = consumer.AddUser(userToAdd);
+
+            ////Assert
+            Assert.Equal(HttpStatusCode.Created, result);
+
+            _mockProviderService.VerifyInteractions();
         }
     }
 }

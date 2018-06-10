@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Net;
 using System.Net.Http;
-using Newtonsoft.Json;
+using System.Text;
 
 namespace PactClient.Pact
 {
@@ -18,7 +20,7 @@ namespace PactClient.Pact
         {
             string reasonPhrase;
 
-            using (var client = new HttpClient {BaseAddress = new Uri(BaseUri)})
+            using (var client = new HttpClient { BaseAddress = new Uri(BaseUri) })
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, "/user/" + id);
                 request.Headers.Add("Accept", "application/json");
@@ -45,6 +47,39 @@ namespace PactClient.Pact
 
             throw new Exception(reasonPhrase);
         }
+
+        public HttpStatusCode AddUser(User userToAdd)
+        {
+            string reasonPhrase;
+
+            using (var client = new HttpClient { BaseAddress = new Uri(BaseUri) })
+            {
+                var userJson = JsonConvert.SerializeObject(userToAdd, _jsonSettings);
+                var requestContent = new StringContent(userJson, Encoding.UTF8, "application/json");
+                var request = new HttpRequestMessage(HttpMethod.Post, "/user") { Content = requestContent };
+                var response = client.SendAsync(request);
+
+                var status = response.Result.StatusCode;
+
+                reasonPhrase = response.Result
+                    .ReasonPhrase;
+
+                request.Dispose();
+                response.Dispose();
+
+                if (status == HttpStatusCode.Created)
+                {
+                    return status;
+                }
+            }
+            throw new Exception(reasonPhrase);
+        }
+
+        private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            NullValueHandling = NullValueHandling.Ignore
+        };
     }
 
 }

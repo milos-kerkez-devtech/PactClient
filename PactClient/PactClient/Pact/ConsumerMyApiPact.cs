@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using PactNet;
+﻿using PactNet;
 using PactNet.Mocks.MockHttpService;
-using PactNet.Models;
+using System;
 
 namespace PactClient.Pact
 {
     public class ConsumerMyApiPact: IDisposable
     {
-        public IPactBuilder PactBuilder { get; private set; }
-        public IMockProviderService MockProviderService { get; private set; }
+        public IPactBuilder PactBuilder { get; }
+        public IMockProviderService MockProviderService { get; }
 
-        public int MockServerPort { get { return 1111; } }
-        public string MockProviderServiceBaseUri { get { return String.Format("http://localhost:{0}", MockServerPort); } }
+        public int MockServerPort => 1111;
+        public string MockProviderServiceBaseUri => string.Format("http://localhost:{0}", MockServerPort);
 
         public ConsumerMyApiPact()
         {
@@ -27,7 +22,7 @@ namespace PactClient.Pact
 
             PactBuilder
                 .ServiceConsumer("Consumer")
-                .HasPactWith("Something API");
+                .HasPactWith("User API");
 
             MockProviderService = PactBuilder.MockService(MockServerPort); //Configure the http mock server
             //or
@@ -41,7 +36,7 @@ namespace PactClient.Pact
 
         public void Dispose()
         {
-            PactBuilder.Build(); //NOTE: Will save the pact file once finished
+            PactBuilder.Build(); 
         }
     }
 }
