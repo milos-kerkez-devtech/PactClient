@@ -75,6 +75,30 @@ namespace PactClient.Pact
             throw new Exception(reasonPhrase);
         }
 
+        public HttpStatusCode DeleteUser(string userId)
+        {
+            string reasonPhrase;
+            using (var client = new HttpClient { BaseAddress = new Uri(BaseUri) })
+            {
+                var request = new HttpRequestMessage(HttpMethod.Delete, "/user/"+userId);
+                var response = client.SendAsync(request);
+
+                var status = response.Result.StatusCode;
+
+                reasonPhrase = response.Result
+                    .ReasonPhrase;
+
+                request.Dispose();
+                response.Dispose();
+
+                if (status == HttpStatusCode.OK)
+                {
+                    return status;
+                }
+            }
+            throw new Exception(reasonPhrase);
+        }
+
         private readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
         {
             ContractResolver = new CamelCasePropertyNamesContractResolver(),

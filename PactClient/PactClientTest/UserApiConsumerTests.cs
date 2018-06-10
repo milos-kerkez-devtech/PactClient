@@ -15,56 +15,58 @@ namespace PactClientTest
         public UserApiConsumerTests(ConsumerMyApiPact data)
         {
             _mockProviderService = data.MockProviderService;
-            _mockProviderService.ClearInteractions();
             _mockProviderServiceBaseUri = data.MockProviderServiceBaseUri;
+            _mockProviderService.ClearInteractions();
         }
 
         [Fact]
-        public void GetUser_WhenTheTestUserExists_ReturnsUser()
+        public void UserGetAddDelete()
         {
             //Arrange
-            _mockProviderService
-                .Given("There is a user with id 'test'")
-                .UponReceiving("A GET request to retrieve user with id 'test'")
-                .With(new ProviderServiceRequest
-                {
-                    Method = HttpVerb.Get,
-                    Path = "/user/test",
-                    Headers = new Dictionary<string, object>
-                    {
-                        { "Accept", "application/json" }
-                    }
-                })
-                .WillRespondWith(new ProviderServiceResponse
-                {
-                    Status = 200,
-                    Headers = new Dictionary<string, object>
-                    {
-                        { "Content-Type", "application/json; charset=utf-8" }
-                    },
-                    Body = new
-                    {
-                        Id = "test",
-                        FirstName = "Milos",
-                        LastName = "Kerkez"
-                    }
-                });
+            SetArrangeForGetUser();
+            SetArrangeForAddUser();
+            SetArrangeForDeleteUser();
 
             var consumer = new UserApiClient(_mockProviderServiceBaseUri);
 
             //Act
-            var result = consumer.GetUser("test");
+            var getUserResult = consumer.GetUser("test");
+            var userToAdd = new User
+            {
+                Id = "test",
+                FirstName = "Milos",
+                LastName = "Kerkez"
+            };
+            var addUserResult = consumer.AddUser(userToAdd);
+            var deleteUserResult = consumer.DeleteUser("test");
 
             //Assert
-            Assert.Equal("test", result.Id);
+            Assert.Equal("test", getUserResult.Id);
+            Assert.Equal(HttpStatusCode.Created, addUserResult);
+            Assert.Equal(HttpStatusCode.OK, deleteUserResult);
 
             _mockProviderService.VerifyInteractions();
         }
 
-        [Fact]
-        public void AddUser_WhenUserDataAreProvided_ReturnsStatusCreated()
+        private void SetArrangeForDeleteUser()
         {
-            //Arrange
+            const string userId = "test";
+            _mockProviderService
+                .Given("Delete a user with id 'test'")
+                .UponReceiving("A DELETE request to remove user with id 'test' from database")
+                .With(new ProviderServiceRequest
+                {
+                    Method = HttpVerb.Delete,
+                    Path = "/user/" + userId
+                })
+                .WillRespondWith(new ProviderServiceResponse
+                {
+                    Status = 200
+                });
+        }
+
+        private void SetArrangeForAddUser()
+        {
             _mockProviderService
                 .Given("Create a user with id 'test'")
                 .UponReceiving("A POST request to create user with id 'test'")
@@ -74,7 +76,7 @@ namespace PactClientTest
                     Path = "/user",
                     Headers = new Dictionary<string, object>
                     {
-                        { "Content-Type", "application/json; charset=utf-8"}
+                        {"Content-Type", "application/json; charset=utf-8"}
                     },
                     Body = new
                     {
@@ -87,22 +89,37 @@ namespace PactClientTest
                 {
                     Status = 201
                 });
+        }
 
-            var consumer = new UserApiClient(_mockProviderServiceBaseUri);
-
-            //Act
-            var userToAdd = new User
-            {
-                Id = "test",
-                FirstName = "Milos",
-                LastName = "Kerkez"
-            };
-            var result = consumer.AddUser(userToAdd);
-
-            ////Assert
-            Assert.Equal(HttpStatusCode.Created, result);
-
-            _mockProviderService.VerifyInteractions();
+        private void SetArrangeForGetUser()
+        {
+            _mockProviderService
+                .Given("There is a user with id 'test'")
+                .UponReceiving("A GET request to retrieve user with id 'test'")
+                .With(new ProviderServiceRequest
+                {
+                    Method = HttpVerb.Get,
+                    Path = "/user/test",
+                    Headers = new Dictionary<string, object>
+                    {
+                        {"Accept", "application/json"}
+                    }
+                })
+                .WillRespondWith(new ProviderServiceResponse
+                {
+                    Status = 200,
+                    Headers = new Dictionary<string, object>
+                    {
+                        {"Content-Type", "application/json; charset=utf-8"}
+                    },
+                    Body = new
+                    {
+                        Id = "test",
+                        FirstName = "Milos",
+                        LastName = "Kerkez"
+                    }
+                });
+            
         }
     }
 }

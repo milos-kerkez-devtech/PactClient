@@ -1,6 +1,7 @@
 ﻿using PactNet;
 using PactNet.Mocks.MockHttpService;
 using System;
+using PactNet.Models;
 
 namespace PactClient.Pact
 {
@@ -18,13 +19,19 @@ namespace PactClient.Pact
             //or
             //PactBuilder = new PactBuilder(new PactConfig { SpecificationVersion = "2.0.0" }); //Configures the Specification Version
             //or
-            PactBuilder = new PactBuilder(new PactConfig { PactDir = @"C:\DevTech\Repos\pacts", LogDir = @"C:\DevTech\Repos\logs" }); //Configures the PactDir and/or LogDir.
+            PactBuilder = new PactBuilder(new PactConfig
+            {
+                SpecificationVersion = "2.0.0",
+                PactDir = @"C:\DevTech\Repos\pacts", 
+                LogDir = @"C:\DevTech\Repos\logs" 
+                
+            }); //Configures the PactDir and/or LogDir.
 
             PactBuilder
                 .ServiceConsumer("Consumer")
                 .HasPactWith("User API");
 
-            MockProviderService = PactBuilder.MockService(MockServerPort); //Configure the http mock server
+            MockProviderService = PactBuilder.MockService(MockServerPort,false, IPAddress.Any); //Configure the http mock server
             //or
             //MockProviderService = PactBuilder.MockService(MockServerPort, true); //By passing true as the second param, you can enabled SSL. A self signed SSL cert will be provisioned by default.
             //or
