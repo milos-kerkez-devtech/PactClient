@@ -43,16 +43,16 @@ namespace PactClientTest
                     },
                     Body = new
                     {
-                        Id = "test",
-                        FirstName = "Milos",
-                        LastName = "Kerkez"
+                        id = "Test",
+                        firstName = "Milos",
+                        lastName = "Kerkez"
                     }
                 });
             var consumer = new UserApiClient(_mockProviderServiceBaseUri);
 
             var getUserResult = consumer.GetUser("test");
 
-            Assert.Equal("test", getUserResult.Id);
+            Assert.Equal("Test", getUserResult.Id);
             Assert.Equal("Milos", getUserResult.FirstName);
             Assert.Equal("Kerkez", getUserResult.LastName);
         }
@@ -67,7 +67,7 @@ namespace PactClientTest
 
             var userToAdd = new User
             {
-                Id = "test",
+                Id = "Test",
                 FirstName = "Milos",
                 LastName = "Kerkez"
             };
@@ -112,9 +112,9 @@ namespace PactClientTest
                     },
                     Body = new
                     {
-                        id = "test",
-                        firstName = "Milos",
-                        lastName = "Kerkez"
+                        Id = "test",
+                        FirstName = "Milos",
+                        LastName = "Kerkez"
                     }
                 })
                 .WillRespondWith(new ProviderServiceResponse
