@@ -32,7 +32,7 @@ namespace PactClient.Pact
 
                 reasonPhrase =
                     response.Result
-                        .ReasonPhrase; //NOTE: any Pact mock provider errors will be returned here and in the response body
+                        .ReasonPhrase;
 
                 request.Dispose();
                 response.Dispose();

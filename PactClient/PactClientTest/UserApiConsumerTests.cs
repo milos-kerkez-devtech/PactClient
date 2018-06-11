@@ -58,46 +58,7 @@ namespace PactClientTest
         }
 
         [Fact]
-        public void UserGetAddDelete()
-        {
-            SetArrangeForAddUser();
-            SetArrangeForDeleteUser();
-
-            var consumer = new UserApiClient(_mockProviderServiceBaseUri);
-
-            var userToAdd = new User
-            {
-                Id = "Test",
-                FirstName = "Milos",
-                LastName = "Kerkez"
-            };
-            var addUserResult = consumer.AddUser(userToAdd);
-            var deleteUserResult = consumer.DeleteUser("test");
-
-            Assert.Equal(HttpStatusCode.Created, addUserResult);
-            Assert.Equal(HttpStatusCode.OK, deleteUserResult);
-
-            _mockProviderService.VerifyInteractions();
-        }
-
-        private void SetArrangeForDeleteUser()
-        {
-            const string userId = "test";
-            _mockProviderService
-                .Given("Delete a user with id 'test'")
-                .UponReceiving("A DELETE request to remove user with id 'test' from database")
-                .With(new ProviderServiceRequest
-                {
-                    Method = HttpVerb.Delete,
-                    Path = "/user/" + userId
-                })
-                .WillRespondWith(new ProviderServiceResponse
-                {
-                    Status = 200
-                });
-        }
-
-        private void SetArrangeForAddUser()
+        public void AddUser_WhenUserDataIsProvided_ShouldReturnStatusCreated()
         {
             _mockProviderService
                 .Given("Create a user with id 'test'")
@@ -121,6 +82,45 @@ namespace PactClientTest
                 {
                     Status = 201
                 });
+
+            var consumer = new UserApiClient(_mockProviderServiceBaseUri);
+            var userToAdd = new User
+            {
+                Id = "Test",
+                FirstName = "Milos",
+                LastName = "Kerkez"
+            };
+            var addUserResult = consumer.AddUser(userToAdd);
+            Assert.Equal(HttpStatusCode.Created, addUserResult);
+        }
+
+        [Fact]
+        public void UserGetAddDelete()
+        {
+
+            const string userId = "test";
+            _mockProviderService
+                .Given("Delete a user with id 'test'")
+                .UponReceiving("A DELETE request to remove user with id 'test' from database")
+                .With(new ProviderServiceRequest
+                {
+                    Method = HttpVerb.Delete,
+                    Path = "/user/" + userId
+                })
+                .WillRespondWith(new ProviderServiceResponse
+                {
+                    Status = 200
+                });
+
+            var consumer = new UserApiClient(_mockProviderServiceBaseUri);
+
+           
+            var deleteUserResult = consumer.DeleteUser("test");
+
+            
+            Assert.Equal(HttpStatusCode.OK, deleteUserResult);
+
+            _mockProviderService.VerifyInteractions();
         }
     }
 }
